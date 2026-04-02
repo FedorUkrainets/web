@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setReady(true);
       return;
     }
-    apiFetch<AuthUser>('/auth/me', { token: t })
+    apiFetch<AuthUser>('/auth/me', { token: t, timeoutMs: 8000 })
       .then(setUser)
       .catch(() => {
         localStorage.removeItem(STORAGE_KEY);

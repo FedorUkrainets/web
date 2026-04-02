@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
@@ -26,7 +27,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
-        <Providers>{children}</Providers>
+        <Suspense
+          fallback={
+            <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600">
+              Loading…
+            </div>
+          }
+        >
+          <Providers>{children}</Providers>
+        </Suspense>
       </body>
     </html>
   );
