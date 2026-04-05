@@ -66,14 +66,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [ready, token, pathname, router]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await apiFetch<{ accessToken: string; user: AuthUser }>('/auth/login', {
+    const res = await apiFetch<{
+      access_token: string;
+      token_type: string;
+      user: { id: string; email: string; fullName: string; role: string };
+    }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       token: null,
     });
-    localStorage.setItem(STORAGE_KEY, res.accessToken);
-    setToken(res.accessToken);
-    setUser(res.user);
+    const tok = res.access_token;
+    localStorage.setItem(STORAGE_KEY, tok);
+    setToken(tok);
+    setUser({
+      id: res.user.id,
+      email: res.user.email,
+      name: res.user.fullName,
+      role: res.user.role,
+    });
   }, []);
 
   const logout = useCallback(() => {
