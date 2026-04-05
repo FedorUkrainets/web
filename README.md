@@ -31,53 +31,43 @@ npm run dev
 
 Backend runs on `http://localhost:3001` and API prefix is `/api`.
 
-## Demo credentials
+Демо-учетные данные
+Создано пользователем seed:
 
-Created by seed:
+email: admin@ev.local
+пароль: Admin123!
 
-- `email`: `admin@ev.local`
-- `password`: `Admin123!`
+Основные конечные точки
+Аутентификация
+POST /api/auth/register
+POST /api/auth/login
+GET /api/auth/me (требуется JWT)
+Станции + Коннекторы
+POST /api/stations (требуется JWT, транзакция создает станцию ​​+ коннектор)
+GET /api/stations (требуется JWT)
+GET /api/stations/:id (требуется JWT)
+PATCH /api/stations/:id/status (требуется JWT, переход жизненного цикла)
+DELETE /api/stations/:id (требуется JWT)
+Жизненный цикл сеансов зарядки
+POST /api/charging-sessions (требуется JWT)
+GET /api/charging-sessions (требуется JWT)
+GET /api/charging-sessions/:id (требуется JWT)
+PATCH /api/charging-sessions/:id/start (JWT) (обязательно)
+PATCH /api/charging-sessions/:id/complete (требуется JWT)
+PATCH /api/charging-sessions/:id/cancel (требуется JWT)
+Правила жизненного цикла
+Значения ChargingSession.status:
 
-## Core endpoints
+СОЗДАНО
+АКТИВНО
+ЗАВЕРШЕНО
+ОТМЕНЕНО
+Разрешенные переходы:
 
-### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me` (JWT required)
+СОЗДАНО -> АКТИВНО
+АКТИВНО -> ЗАВЕРШЕНО
+АКТИВНО -> ОТМЕНЕНО
+Запрещенные переходы возвращают ошибку 409 Conflict.
 
-### Stations + Connectors
-- `POST /api/stations` (JWT required, transaction create station + connectors)
-- `GET /api/stations` (JWT required)
-- `GET /api/stations/:id` (JWT required)
-- `PATCH /api/stations/:id/status` (JWT required, lifecycle transition)
-- `DELETE /api/stations/:id` (JWT required)
-
-### Charging Sessions lifecycle
-- `POST /api/charging-sessions` (JWT required)
-- `GET /api/charging-sessions` (JWT required)
-- `GET /api/charging-sessions/:id` (JWT required)
-- `PATCH /api/charging-sessions/:id/start` (JWT required)
-- `PATCH /api/charging-sessions/:id/complete` (JWT required)
-- `PATCH /api/charging-sessions/:id/cancel` (JWT required)
-
-## Lifecycle rules
-
-`ChargingSession.status` values:
-
-- `CREATED`
-- `ACTIVE`
-- `COMPLETED`
-- `CANCELLED`
-
-Allowed transitions:
-
-- `CREATED -> ACTIVE`
-- `ACTIVE -> COMPLETED`
-- `ACTIVE -> CANCELLED`
-
-Forbidden transitions return `409 Conflict`.
-
-## Rollback demo
-
-`POST /api/stations` accepts optional `forceFail: true`.
-If passed, service throws inside Prisma `$transaction`, so station and connectors are fully rolled back.
+Демонстрация отката
+POST /api/stations принимает необязательный параметр forceFail: true. Если он передан, служба генерирует исключение внутри Prisma $transaction, поэтому станция и коннекторы полностью откатываются.
