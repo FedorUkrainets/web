@@ -21,6 +21,19 @@ enum ChargingSessionStatus {
   CANCELLED
 }
 
+enum StationStatus {
+  CREATED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ChargerStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+}
+
 model User {
   id               String            @id @default(cuid())
   email            String            @unique
@@ -35,7 +48,17 @@ model User {
 model ChargingStation {
   id               String            @id @default(cuid())
   name             String
+  code             String            @unique
   address          String
+  city             String?
+  status           StationStatus     @default(CREATED)
+  capacityKw       Float             @default(0)
+  currentLoadKw    Float             @default(0)
+  totalChargers    Int               @default(1)
+  activeChargers   Int               @default(0)
+  revenue          Float             @default(0)
+  lastMaintenanceAt DateTime?
+  notes            String?
   connectors       Connector[]
   chargingSessions ChargingSession[]
   createdAt        DateTime          @default(now())
@@ -46,8 +69,10 @@ model Connector {
   id               String            @id @default(cuid())
   stationId        String
   station          ChargingStation   @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  label            String
   type             String
   powerKw          Float
+  status           ChargerStatus     @default(AVAILABLE)
   isAvailable      Boolean           @default(true)
   chargingSessions ChargingSession[]
   createdAt        DateTime          @default(now())

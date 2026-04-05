@@ -47,8 +47,10 @@ Created by seed:
 
 ### Stations + Connectors
 - `POST /api/stations` (JWT required, transaction create station + connectors)
-- `GET /api/stations`
-- `GET /api/stations/:id`
+- `GET /api/stations` (JWT required)
+- `GET /api/stations/:id` (JWT required)
+- `PATCH /api/stations/:id/status` (JWT required, lifecycle transition)
+- `DELETE /api/stations/:id` (JWT required)
 
 ### Charging Sessions lifecycle
 - `POST /api/charging-sessions` (JWT required)
