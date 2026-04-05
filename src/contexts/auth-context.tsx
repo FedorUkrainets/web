@@ -56,11 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    const publicPaths = ['/login'];
+    const publicPaths = ['/login', '/register'];
     if (!token && !publicPaths.includes(pathname)) {
       router.replace('/login');
     }
-    if (token && pathname === '/login') {
+    if (token && publicPaths.includes(pathname)) {
       router.replace('/');
     }
   }, [ready, token, pathname, router]);
@@ -69,20 +69,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await apiFetch<{
       access_token: string;
       token_type: string;
-      user: { id: string; email: string; fullName: string; role: string };
     }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       token: null,
     });
+
+    if (res.token_type.toLowerCase() !== 'bearer') {
+      throw new Error('Unexpected token type from server');
+    }
+
     const tok = res.access_token;
     localStorage.setItem(STORAGE_KEY, tok);
     setToken(tok);
+    const me = await apiFetch<{ id: string; email: string; fullName: string; role: string }>('/auth/me', {
+      token: tok,
+    });
     setUser({
-      id: res.user.id,
-      email: res.user.email,
-      name: res.user.fullName,
-      role: res.user.role,
+      id: me.id,
+      email: me.email,
+      name: me.fullName,
+      role: me.role,
     });
   }, []);
 
