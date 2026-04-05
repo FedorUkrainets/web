@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ENGINEER
+  ADMIN
+  DIRECTOR
+}
+
+enum ChargingSessionStatus {
+  CREATED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id               String            @id @default(cuid())
+  email            String            @unique
+  passwordHash     String
+  fullName         String
+  role             UserRole          @default(USER)
+  chargingSessions ChargingSession[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model ChargingStation {
+  id               String            @id @default(cuid())
+  name             String
+  address          String
+  connectors       Connector[]
+  chargingSessions ChargingSession[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Connector {
+  id               String            @id @default(cuid())
+  stationId        String
+  station          ChargingStation   @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  type             String
+  powerKw          Float
+  isAvailable      Boolean           @default(true)
+  chargingSessions ChargingSession[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model ChargingSession {
+  id         String                @id @default(cuid())
+  userId     String
+  stationId  String
+  connectorId String
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  station    ChargingStation       @relation(fields: [stationId], references: [id], onDelete: Restrict)
+  connector  Connector             @relation(fields: [connectorId], references: [id], onDelete: Restrict)
+  status     ChargingSessionStatus @default(CREATED)
+  startedAt  DateTime?
+  endedAt    DateTime?
+  energyKwh  Float?
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+}
