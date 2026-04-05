@@ -18,6 +18,9 @@ Frontend runs on `http://localhost:3000`.
 
 ```bash
 cd backend
+cp .env.example .env   # Linux/macOS
+# or on Windows PowerShell:
+copy .env.example .env
 cp .env.example .env
 npm install
 npm run prisma:generate
