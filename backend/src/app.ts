@@ -18,6 +18,9 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/stations', stationRoutes);
 app.use('/api/charging-sessions', chargingSessionRoutes);
+app.use('/auth', authRoutes);
+app.use('/stations', stationRoutes);
+app.use('/charging-sessions', chargingSessionRoutes);
 
 app.use((_req, _res, next) => {
   next(new ApiError(404, 'Route not found'));
