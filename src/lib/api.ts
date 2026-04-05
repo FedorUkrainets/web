@@ -11,7 +11,10 @@ export async function apiFetch<T>(
 ): Promise<T> {
   // `token: null` = explicitly no Bearer (e.g. login); do not fall back to localStorage.
   const token = options.token !== undefined ? options.token : getToken();
-  const { timeoutMs = 15000, token: _tokenField, ...fetchInit } = options;
+  const timeoutMs = options.timeoutMs ?? 15000;
+  const fetchInit: RequestInit = { ...options };
+  delete (fetchInit as Record<string, unknown>).token;
+  delete (fetchInit as Record<string, unknown>).timeoutMs;
   const headers = new Headers(fetchInit.headers);
   headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
