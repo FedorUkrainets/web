@@ -22,7 +22,7 @@ export class StationController {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const station = await stationService.findById(req.params.id);
+      const station = await stationService.findById(String(req.params.id));
       return res.status(200).json(station);
     } catch (error) {
       return next(error);

@@ -22,7 +22,7 @@ export class ChargingSessionController {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const session = await chargingSessionService.findById(req.params.id);
+      const session = await chargingSessionService.findById(String(req.params.id));
       return res.status(200).json(session);
     } catch (error) {
       return next(error);
@@ -31,7 +31,7 @@ export class ChargingSessionController {
 
   async start(req: Request, res: Response, next: NextFunction) {
     try {
-      const session = await chargingSessionService.start(req.params.id);
+      const session = await chargingSessionService.start(String(req.params.id));
       return res.status(200).json(session);
     } catch (error) {
       return next(error);
@@ -40,7 +40,7 @@ export class ChargingSessionController {
 
   async complete(req: Request, res: Response, next: NextFunction) {
     try {
-      const session = await chargingSessionService.complete(req.params.id, req.body);
+      const session = await chargingSessionService.complete(String(req.params.id), req.body);
       return res.status(200).json(session);
     } catch (error) {
       return next(error);
@@ -49,7 +49,7 @@ export class ChargingSessionController {
 
   async cancel(req: Request, res: Response, next: NextFunction) {
     try {
-      const session = await chargingSessionService.cancel(req.params.id);
+      const session = await chargingSessionService.cancel(String(req.params.id));
       return res.status(200).json(session);
     } catch (error) {
       return next(error);

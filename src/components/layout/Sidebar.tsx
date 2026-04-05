@@ -10,9 +10,6 @@ export function Sidebar() {
         <Link className="block rounded px-3 py-2 text-slate-700 hover:bg-slate-100" href="/">
           Dashboard
         </Link>
-        <Link className="block rounded px-3 py-2 text-slate-700 hover:bg-slate-100" href="/login">
-          Login
-        </Link>
       </nav>
     </aside>
   );

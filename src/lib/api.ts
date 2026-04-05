@@ -40,7 +40,16 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || res.statusText);
+    let message = res.statusText || 'Request failed';
+    if (text) {
+      try {
+        const parsed = JSON.parse(text) as { message?: string };
+        message = parsed.message || text;
+      } catch {
+        message = text;
+      }
+    }
+    throw new Error(message);
   }
   return res.json() as Promise<T>;
 }
