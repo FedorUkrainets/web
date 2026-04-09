@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function StationCard({ station, pendingStatus, setPendingStatus, onChangeStatus, onDelete }) {
   return (
     <article className="card">

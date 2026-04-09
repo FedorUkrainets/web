@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import StationCard from '../components/StationCard';
 import AddStationModal from '../components/AddStationModal';

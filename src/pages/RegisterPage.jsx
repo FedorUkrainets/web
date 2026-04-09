@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { apiRequest } from '../services/api';
 
 export default function RegisterPage({ navigate }) {
