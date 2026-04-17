@@ -11,7 +11,7 @@ export default function LoginPage({ navigate }) {
     event.preventDefault();
     try {
       await login(email, password);
-      navigate('/stations');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     }

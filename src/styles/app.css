@@ -9,6 +9,9 @@ input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-rad
 .auth-card { width: 320px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; display: grid; gap: 10px; }
 .layout { min-height: 100vh; display: grid; grid-template-columns: 220px 1fr; }
 .sidebar { background: white; border-right: 1px solid #e5e7eb; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.nav-stack { display: grid; gap: 8px; }
+.nav-btn { width: 100%; text-align: left; background: #f1f5f9; color: #0f172a; }
+.nav-btn-active { background: #2563eb; color: white; }
 .main-content { padding: 20px; }
 .row { display: flex; gap: 8px; align-items: center; }
 .row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -23,6 +26,12 @@ input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-rad
 .status.completed { background: #bfdbfe; }
 .status.cancelled { background: #fecaca; }
 .error { color: #b91c1c; }
+.muted { color: #64748b; margin: 0; }
+.metric-value { font-size: 24px; font-weight: 700; margin: 0; }
+.metrics-cards { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.table-wrap { overflow: auto; }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; }
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: grid; place-items: center; padding: 20px; }
 .modal { width: 480px; max-width: 100%; background: white; border-radius: 10px; padding: 16px; display: grid; gap: 10px; }
 .checkbox-row { display: flex; gap: 8px; align-items: center; }
