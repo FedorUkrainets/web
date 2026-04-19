@@ -20,12 +20,13 @@ export default function LoginPage({ navigate }) {
   return (
     <main className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h1>Login</h1>
+        <h1>Вход</h1>
+        <p className="muted">Авторизуйтесь, чтобы открыть весь функционал платформы.</p>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         {error && <p className="error">{error}</p>}
-        <button type="submit">Login</button>
-        <p>Need an account? <button type="button" className="link-btn" onClick={() => navigate('/register')}>Register</button></p>
+        <button type="submit">Войти</button>
+        <p>Нет аккаунта? <button type="button" className="link-btn" onClick={() => navigate('/register')}>Зарегистрироваться</button></p>
       </form>
     </main>
   );

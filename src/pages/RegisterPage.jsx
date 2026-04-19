@@ -23,12 +23,13 @@ export default function RegisterPage({ navigate }) {
   return (
     <main className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h1>Register</h1>
+        <h1>Регистрация</h1>
+        <p className="muted">Создайте аккаунт администратора для доступа к системе.</p>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
         {error && <p className="error">{error}</p>}
-        <button type="submit">Create Account</button>
-        <p>Already registered? <button type="button" className="link-btn" onClick={() => navigate('/login')}>Login</button></p>
+        <button type="submit">Создать аккаунт</button>
+        <p>Уже зарегистрированы? <button type="button" className="link-btn" onClick={() => navigate('/login')}>Войти</button></p>
       </form>
     </main>
   );

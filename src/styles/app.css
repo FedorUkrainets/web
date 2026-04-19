@@ -47,13 +47,14 @@ select {
 }
 
 .auth-card {
-    width: 320px;
+    width: 380px;
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 20px;
+    border-radius: 14px;
+    padding: 28px;
     display: grid;
-    gap: 10px;
+    gap: 14px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
 .layout {
@@ -65,15 +66,15 @@ select {
 .sidebar {
     background: white;
     border-right: 1px solid #e5e7eb;
-    padding: 16px;
+    padding: 24px 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 18px;
 }
 
 .nav-stack {
     display: grid;
-    gap: 8px;
+    gap: 12px;
 }
 
 .nav-btn {
@@ -89,12 +90,12 @@ select {
 }
 
 .main-content {
-    padding: 20px;
+    padding: 28px;
 }
 
 .row {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
 }
 
@@ -102,28 +103,30 @@ select {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 16px;
+    margin-bottom: 8px;
 }
 
 .cards {
-    margin-top: 16px;
+    margin-top: 24px;
     display: grid;
-    gap: 12px;
+    gap: 20px;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
 .card {
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px;
+    border-radius: 14px;
+    padding: 18px;
     display: grid;
-    gap: 10px;
+    gap: 14px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .metrics {
     display: grid;
-    gap: 6px;
+    gap: 10px;
     font-size: 14px;
     color: #334155;
 }
@@ -131,7 +134,7 @@ select {
 .chargers {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 10px;
 }
 
 .chip {
@@ -195,7 +198,7 @@ select {
 .table th,
 .table td {
     text-align: left;
-    padding: 8px;
+    padding: 12px 10px;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -212,10 +215,10 @@ select {
     width: 480px;
     max-width: 100%;
     background: white;
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 20px;
     display: grid;
-    gap: 10px;
+    gap: 14px;
 }
 
 .checkbox-row {
