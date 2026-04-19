@@ -1,31 +1,32 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../db/database');
+const { query } = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
-function register({ email, password, role = 'user' }) {
+async function register({ email, password, role = 'user' }) {
   if (!email || !password) {
     const error = new Error('Email and password are required');
     error.status = 400;
     throw error;
   }
 
-  const exists = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-  if (exists) {
+  const exists = await query('SELECT id FROM users WHERE email = $1', [email]);
+  if (exists.rowCount > 0) {
     const error = new Error('Email already exists');
     error.status = 409;
     throw error;
   }
 
   const passwordHash = bcrypt.hashSync(password, 10);
-  db.prepare('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)').run(email, passwordHash, role);
+  await query('INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3)', [email, passwordHash, role]);
 
   return { message: 'Registered successfully' };
 }
 
-function login({ email, password }) {
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+async function login({ email, password }) {
+  const result = await query('SELECT * FROM users WHERE email = $1', [email]);
+  const user = result.rows[0];
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     const error = new Error('Invalid credentials');
     error.status = 401;
