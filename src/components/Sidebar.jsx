@@ -11,14 +11,14 @@ export default function Sidebar({ navigate }) {
 
   return (
     <aside className="sidebar">
-      <h2>EV Demo</h2>
+      <h2>EVCharge</h2>
 
       <nav className="nav-stack">
         <button type="button" className={navClass('/dashboard')} onClick={() => navigate('/dashboard')}>
-          Dashboard
+          Панель управления
         </button>
         <button type="button" className={navClass('/stations')} onClick={() => navigate('/stations')}>
-          Stations
+          Станции
         </button>
       </nav>
 
@@ -30,7 +30,7 @@ export default function Sidebar({ navigate }) {
           navigate('/login');
         }}
       >
-        Logout
+        Выйти
       </button>
     </aside>
   );
