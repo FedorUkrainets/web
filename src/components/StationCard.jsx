@@ -13,27 +13,32 @@ const chargerStatusLabel = {
 };
 
 export default function StationCard({ station, pendingStatus, setPendingStatus, onChangeStatus, onDelete }) {
+  const status = station.status || 'CREATED';
+  const chargers = Array.isArray(station.chargers) ? station.chargers : [];
+
   return (
     <article className="card">
       <div className="row-between">
         <h3>{station.name}</h3>
-        <span className={`status ${station.status.toLowerCase()}`}>{statusLabel[station.status] || station.status}</span>
+        <span className={`status ${status.toLowerCase()}`}>{statusLabel[status] || status}</span>
       </div>
       <p>{station.code}</p>
       <p>{station.location}</p>
       <div className="metrics">
         <span>Нагрузка: {station.current_load_kw} / {station.capacity_kw} kW</span>
         <span>Зарядки: {station.active_chargers}/{station.total_chargers}</span>
-        <span>Выручка: ${station.revenue}</span>
+        <span>Выручка: ${Number(station.revenue || 0).toFixed(2)}</span>
       </div>
       <div className="chargers">
-        {station.chargers.map((charger) => (
-          <span key={charger.id} className="chip">{charger.label} ({chargerStatusLabel[charger.status] || charger.status})</span>
+        {chargers.map((charger) => (
+          <span key={charger.id} className="chip">
+            {charger.label} ({chargerStatusLabel[charger.status] || charger.status})
+          </span>
         ))}
       </div>
       <div className="row">
         <select
-          value={pendingStatus[station.id] || station.status}
+          value={pendingStatus[station.id] || status}
           onChange={(e) => setPendingStatus((prev) => ({ ...prev, [station.id]: e.target.value }))}
         >
           <option value="CREATED">CREATED</option>

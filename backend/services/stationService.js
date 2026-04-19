@@ -8,7 +8,8 @@ const ALLOWED_TRANSITIONS = {
 };
 
 function validateTransition(current, next) {
-  if (!ALLOWED_TRANSITIONS[current].includes(next)) {
+  const transitions = ALLOWED_TRANSITIONS[current];
+  if (!transitions || !transitions.includes(next)) {
     const error = new Error(`Invalid status transition from ${current} to ${next}`);
     error.status = 409;
     throw error;
@@ -22,7 +23,6 @@ function mapStationsWithChargers(stations, chargers) {
     list.push(charger);
     chargersByStation.set(charger.station_id, list);
   }
-
   return stations.map((station) => ({
     ...station,
     chargers: chargersByStation.get(station.id) || [],
@@ -52,8 +52,22 @@ async function createStation(payload) {
     }
   }
 
-  if (payload.active_chargers > payload.total_chargers) {
-    const error = new Error('active_chargers cannot exceed total_chargers');
+  const capacity = Number(payload.capacity_kw);
+  const totalChargers = Number(payload.total_chargers);
+  const activeChargers = Number(payload.active_chargers);
+
+  if (!Number.isFinite(capacity) || capacity <= 0) {
+    const error = new Error('capacity_kw must be a positive number');
+    error.status = 400;
+    throw error;
+  }
+  if (!Number.isInteger(totalChargers) || totalChargers <= 0) {
+    const error = new Error('total_chargers must be a positive integer');
+    error.status = 400;
+    throw error;
+  }
+  if (!Number.isInteger(activeChargers) || activeChargers < 0 || activeChargers > totalChargers) {
+    const error = new Error('active_chargers must be between 0 and total_chargers');
     error.status = 400;
     throw error;
   }
@@ -71,26 +85,26 @@ async function createStation(payload) {
         payload.code,
         payload.location,
         payload.status || 'CREATED',
-        payload.capacity_kw,
-        payload.current_load_kw,
-        payload.total_chargers,
-        payload.active_chargers,
-        payload.revenue || 0,
-        payload.last_maintenance_at,
+        capacity,
+        Number(payload.current_load_kw),
+        totalChargers,
+        activeChargers,
+        Number(payload.revenue) || 0,
+        payload.last_maintenance_at || null,
       ],
     );
 
     const stationId = stationInsert.rows[0].id;
-    const chargerPower = Number((payload.capacity_kw / payload.total_chargers).toFixed(2));
+    const chargerPower = Number((capacity / totalChargers).toFixed(2));
 
-    for (let i = 1; i <= payload.total_chargers; i += 1) {
+    for (let i = 1; i <= totalChargers; i += 1) {
       await client.query(
         'INSERT INTO chargers (station_id, label, power_kw, status) VALUES ($1, $2, $3, $4)',
         [
           stationId,
           `CH-${String(i).padStart(2, '0')}`,
           chargerPower,
-          i <= payload.active_chargers ? 'IN_USE' : 'AVAILABLE',
+          i <= activeChargers ? 'BUSY' : 'AVAILABLE',
         ],
       );
     }
@@ -100,8 +114,7 @@ async function createStation(payload) {
     }
 
     await client.query('COMMIT');
-    const station = await getStationById(stationId);
-    return station;
+    return await getStationById(stationId);
   } catch (error) {
     await client.query('ROLLBACK');
     if (error.code === '23505') {
@@ -133,6 +146,11 @@ async function deleteStation(id) {
 }
 
 async function changeStationStatus(id, status) {
+  if (!status) {
+    const error = new Error('status is required');
+    error.status = 400;
+    throw error;
+  }
   const station = await query('SELECT * FROM stations WHERE id = $1', [id]);
   if (station.rowCount === 0) {
     const error = new Error('Station not found');
@@ -140,12 +158,9 @@ async function changeStationStatus(id, status) {
     throw error;
   }
 
-  const currentStation = station.rows[0];
-  validateTransition(currentStation.status, status);
+  validateTransition(station.rows[0].status, status);
   await query('UPDATE stations SET status = $1 WHERE id = $2', [status, id]);
-
-  const updatedStation = await getStationById(id);
-  return updatedStation;
+  return await getStationById(id);
 }
 
-module.exports = { listStations, createStation, deleteStation, changeStationStatus };
+module.exports = { listStations, createStation, deleteStation, changeStationStatus, getStationById };

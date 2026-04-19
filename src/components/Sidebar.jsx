@@ -1,13 +1,15 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 
-function navClass(path) {
-  const active = window.location.pathname === path;
-  return active ? 'nav-btn nav-btn-active' : 'nav-btn';
-}
-
-export default function Sidebar({ navigate }) {
+export default function Sidebar({ navigate, currentPath }) {
   const { logout } = useAuth();
+
+  const navClass = (path) => (currentPath === path ? 'nav-btn nav-btn-active' : 'nav-btn');
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <aside className="sidebar">
@@ -22,14 +24,7 @@ export default function Sidebar({ navigate }) {
         </button>
       </nav>
 
-      <button
-        type="button"
-        className="secondary"
-        onClick={() => {
-          logout();
-          navigate('/login');
-        }}
-      >
+      <button type="button" className="secondary" onClick={handleLogout}>
         Выйти
       </button>
     </aside>

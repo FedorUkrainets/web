@@ -1,15 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export default function ProtectedRoute({ children, navigate }) {
-  const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
-
-  if (!isAuthenticated) return null;
+// Guard-обёртка (оставлена как утилита — роутинг теперь в App.jsx).
+export default function ProtectedRoute({ children, fallback = null }) {
+  const { isAuthenticated, isReady } = useAuth();
+  if (!isReady) return null;
+  if (!isAuthenticated) return fallback;
   return children;
 }

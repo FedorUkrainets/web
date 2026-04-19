@@ -9,7 +9,7 @@ const statusLabel = {
   CANCELLED: 'Отменена',
 };
 
-export default function DashboardPage({ navigate }) {
+export default function DashboardPage({ navigate, currentPath }) {
   const [stations, setStations] = useState([]);
   const [error, setError] = useState('');
 
@@ -30,14 +30,14 @@ export default function DashboardPage({ navigate }) {
   const metrics = useMemo(() => {
     const totalStations = stations.length;
     const activeStations = stations.filter((s) => s.status === 'ACTIVE').length;
-    const totalChargers = stations.reduce((sum, s) => sum + s.total_chargers, 0);
+    const totalChargers = stations.reduce((sum, s) => sum + Number(s.total_chargers || 0), 0);
     const totalRevenue = stations.reduce((sum, s) => sum + Number(s.revenue || 0), 0);
     return { totalStations, activeStations, totalChargers, totalRevenue };
   }, [stations]);
 
   return (
     <div className="layout">
-      <Sidebar navigate={navigate} />
+      <Sidebar navigate={navigate} currentPath={currentPath} />
       <main className="main-content">
         <h1>Панель управления</h1>
         <p className="muted">Краткая сводка по вашей сети зарядных станций.</p>

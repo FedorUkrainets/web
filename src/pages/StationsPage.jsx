@@ -4,7 +4,7 @@ import StationCard from '../components/StationCard';
 import AddStationModal from '../components/AddStationModal';
 import { apiRequest } from '../services/api';
 
-export default function StationsPage({ navigate }) {
+export default function StationsPage({ navigate, currentPath }) {
   const [stations, setStations] = useState([]);
   const [pendingStatus, setPendingStatus] = useState({});
   const [showModal, setShowModal] = useState(false);
@@ -52,7 +52,7 @@ export default function StationsPage({ navigate }) {
 
   return (
     <div className="layout">
-      <Sidebar navigate={navigate} />
+      <Sidebar navigate={navigate} currentPath={currentPath} />
       <main className="main-content">
         <div className="row-between">
           <h1>Станции</h1>
