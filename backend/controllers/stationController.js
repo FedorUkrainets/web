@@ -32,4 +32,12 @@ function changeStatus(req, res, next) {
   }
 }
 
-module.exports = { list, create, remove, changeStatus };
+function update(req, res, next) {
+  try {
+    res.json(stationService.changeStationStatus(Number(req.params.id), req.body.status));
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { list, create, remove, changeStatus, update };
