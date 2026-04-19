@@ -1,22 +1,34 @@
 import React from 'react';
 
+const statusLabel = {
+  CREATED: 'Создана',
+  ACTIVE: 'Активна',
+  COMPLETED: 'Завершена',
+  CANCELLED: 'Отменена',
+};
+const chargerStatusLabel = {
+  AVAILABLE: 'Доступна',
+  BUSY: 'Занята',
+  OFFLINE: 'Отключена',
+};
+
 export default function StationCard({ station, pendingStatus, setPendingStatus, onChangeStatus, onDelete }) {
   return (
     <article className="card">
       <div className="row-between">
         <h3>{station.name}</h3>
-        <span className={`status ${station.status.toLowerCase()}`}>{station.status}</span>
+        <span className={`status ${station.status.toLowerCase()}`}>{statusLabel[station.status] || station.status}</span>
       </div>
       <p>{station.code}</p>
       <p>{station.location}</p>
       <div className="metrics">
-        <span>Load: {station.current_load_kw} / {station.capacity_kw} kW</span>
-        <span>Chargers: {station.active_chargers}/{station.total_chargers}</span>
-        <span>Revenue: ${station.revenue}</span>
+        <span>Нагрузка: {station.current_load_kw} / {station.capacity_kw} kW</span>
+        <span>Зарядки: {station.active_chargers}/{station.total_chargers}</span>
+        <span>Выручка: ${station.revenue}</span>
       </div>
       <div className="chargers">
         {station.chargers.map((charger) => (
-          <span key={charger.id} className="chip">{charger.label} ({charger.status})</span>
+          <span key={charger.id} className="chip">{charger.label} ({chargerStatusLabel[charger.status] || charger.status})</span>
         ))}
       </div>
       <div className="row">
@@ -29,8 +41,8 @@ export default function StationCard({ station, pendingStatus, setPendingStatus, 
           <option value="COMPLETED">COMPLETED</option>
           <option value="CANCELLED">CANCELLED</option>
         </select>
-        <button type="button" className="secondary" onClick={() => onChangeStatus(station)}>Change Status</button>
-        <button type="button" className="danger" onClick={() => onDelete(station.id)}>Delete</button>
+        <button type="button" className="secondary" onClick={() => onChangeStatus(station)}>Обновить статус</button>
+        <button type="button" className="danger" onClick={() => onDelete(station.id)}>Удалить</button>
       </div>
     </article>
   );

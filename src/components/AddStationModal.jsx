@@ -33,26 +33,26 @@ export default function AddStationModal({ onClose, onCreate }) {
   return (
     <div className="modal-backdrop">
       <form className="modal" onSubmit={handleSubmit}>
-        <h3>Add Station</h3>
-        <input placeholder="Name" required value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
-        <input placeholder="Code" required value={form.code} onChange={(e) => setForm((p) => ({ ...p, code: e.target.value }))} />
-        <input placeholder="Location" required value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
-        <input type="number" min="1" placeholder="Capacity kW" value={form.capacity_kw} onChange={(e) => setForm((p) => ({ ...p, capacity_kw: e.target.value }))} />
-        <input type="number" min="0" placeholder="Current load kW" value={form.current_load_kw} onChange={(e) => setForm((p) => ({ ...p, current_load_kw: e.target.value }))} />
-        <input type="number" min="1" placeholder="Total chargers" value={form.total_chargers} onChange={(e) => setForm((p) => ({ ...p, total_chargers: e.target.value }))} />
-        <input type="number" min="0" placeholder="Active chargers" value={form.active_chargers} onChange={(e) => setForm((p) => ({ ...p, active_chargers: e.target.value }))} />
-        <input type="number" min="0" placeholder="Revenue" value={form.revenue} onChange={(e) => setForm((p) => ({ ...p, revenue: e.target.value }))} />
+        <h3>Добавление станции</h3>
+        <input placeholder="Название" required value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
+        <input placeholder="Код" required value={form.code} onChange={(e) => setForm((p) => ({ ...p, code: e.target.value }))} />
+        <input placeholder="Локация" required value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
+        <input type="number" min="1" placeholder="Мощность, kW" value={form.capacity_kw} onChange={(e) => setForm((p) => ({ ...p, capacity_kw: e.target.value }))} />
+        <input type="number" min="0" placeholder="Текущая нагрузка, kW" value={form.current_load_kw} onChange={(e) => setForm((p) => ({ ...p, current_load_kw: e.target.value }))} />
+        <input type="number" min="1" placeholder="Всего зарядок" value={form.total_chargers} onChange={(e) => setForm((p) => ({ ...p, total_chargers: e.target.value }))} />
+        <input type="number" min="0" placeholder="Активных зарядок" value={form.active_chargers} onChange={(e) => setForm((p) => ({ ...p, active_chargers: e.target.value }))} />
+        <input type="number" min="0" placeholder="Выручка" value={form.revenue} onChange={(e) => setForm((p) => ({ ...p, revenue: e.target.value }))} />
         <label>
-          Last maintenance
+          Дата последнего обслуживания
           <input type="date" value={form.last_maintenance_at} onChange={(e) => setForm((p) => ({ ...p, last_maintenance_at: e.target.value }))} />
         </label>
         <label className="checkbox-row">
           <input type="checkbox" checked={form.force_fail} onChange={(e) => setForm((p) => ({ ...p, force_fail: e.target.checked }))} />
-          Force transaction failure (rollback demo)
+          Принудительно вызвать ошибку транзакции (демо отката)
         </label>
         <div className="row">
-          <button type="button" className="secondary" onClick={onClose}>Cancel</button>
-          <button type="submit">Create</button>
+          <button type="button" className="secondary" onClick={onClose}>Отмена</button>
+          <button type="submit">Создать</button>
         </div>
       </form>
     </div>
