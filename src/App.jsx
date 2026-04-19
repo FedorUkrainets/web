@@ -21,17 +21,15 @@ export default function App() {
     return () => window.removeEventListener('popstate', onChange);
   }, []);
 
-  if (path === '/') {
-    if (isAuthenticated) return <DashboardPage navigate={navigate} />;
+  if (!isAuthenticated) {
+    if (path === '/register') {
+      return <RegisterPage navigate={navigate} />;
+    }
     return <LoginPage navigate={navigate} />;
   }
 
-  if (path === '/login') {
-    return <LoginPage navigate={navigate} />;
-  }
-
-  if (path === '/register') {
-    return <RegisterPage navigate={navigate} />;
+  if (path === '/' || path === '/login' || path === '/register') {
+    return <DashboardPage navigate={navigate} />;
   }
 
   if (path === '/dashboard') {
@@ -50,9 +48,5 @@ export default function App() {
     );
   }
 
-  if (isAuthenticated) {
-    return <DashboardPage navigate={navigate} />;
-  }
-
-  return <LoginPage navigate={navigate} />;
+  return <DashboardPage navigate={navigate} />;
 }

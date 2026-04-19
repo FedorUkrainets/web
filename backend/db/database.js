@@ -1,14 +1,22 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+require('dotenv').config();
 
-const dataDir = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+const { Pool } = require('pg');
+
+const ssl = process.env.NODE_ENV === 'production'
+  ? { rejectUnauthorized: false }
+  : false;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl,
+});
+
+pool.on('error', (error) => {
+  console.error('Unexpected PostgreSQL pool error:', error.message);
+});
+
+async function query(text, params = []) {
+  return pool.query(text, params);
 }
 
-const dbPath = path.join(dataDir, 'app.db');
-const db = new Database(dbPath);
-db.pragma('foreign_keys = ON');
-
-module.exports = db;
+module.exports = { pool, query };
