@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { apiRequest } from '../services/api';
 
+const statusLabel = {
+  CREATED: 'Создана',
+  ACTIVE: 'Активна',
+  COMPLETED: 'Завершена',
+  CANCELLED: 'Отменена',
+};
+
 export default function DashboardPage({ navigate }) {
   const [stations, setStations] = useState([]);
   const [error, setError] = useState('');
@@ -32,44 +39,44 @@ export default function DashboardPage({ navigate }) {
     <div className="layout">
       <Sidebar navigate={navigate} />
       <main className="main-content">
-        <h1>Dashboard</h1>
-        <p className="muted">Quick overview of your EV network.</p>
+        <h1>Панель управления</h1>
+        <p className="muted">Краткая сводка по вашей сети зарядных станций.</p>
 
         {error && <p className="error">{error}</p>}
 
         <section className="cards metrics-cards">
           <article className="card">
-            <h3>Total stations</h3>
+            <h3>Всего станций</h3>
             <p className="metric-value">{metrics.totalStations}</p>
           </article>
           <article className="card">
-            <h3>Active stations</h3>
+            <h3>Активных станций</h3>
             <p className="metric-value">{metrics.activeStations}</p>
           </article>
           <article className="card">
-            <h3>Total chargers</h3>
+            <h3>Всего зарядок</h3>
             <p className="metric-value">{metrics.totalChargers}</p>
           </article>
           <article className="card">
-            <h3>Total revenue</h3>
+            <h3>Общая выручка</h3>
             <p className="metric-value">${metrics.totalRevenue.toFixed(2)}</p>
           </article>
         </section>
 
         <section className="card">
           <div className="row-between">
-            <h2>Recent stations</h2>
-            <button type="button" onClick={() => navigate('/stations')}>Open stations</button>
+            <h2>Последние станции</h2>
+            <button type="button" onClick={() => navigate('/stations')}>Открыть список станций</button>
           </div>
           <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Code</th>
-                  <th>Status</th>
-                  <th>Load</th>
-                  <th>Chargers</th>
+                  <th>Название</th>
+                  <th>Код</th>
+                  <th>Статус</th>
+                  <th>Нагрузка</th>
+                  <th>Зарядки</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,14 +84,14 @@ export default function DashboardPage({ navigate }) {
                   <tr key={station.id}>
                     <td>{station.name}</td>
                     <td>{station.code}</td>
-                    <td>{station.status}</td>
+                    <td>{statusLabel[station.status] || station.status}</td>
                     <td>{station.current_load_kw}/{station.capacity_kw} kW</td>
                     <td>{station.active_chargers}/{station.total_chargers}</td>
                   </tr>
                 ))}
                 {stations.length === 0 ? (
                   <tr>
-                    <td colSpan="5">No stations yet.</td>
+                    <td colSpan="5">Станции пока не добавлены.</td>
                   </tr>
                 ) : null}
               </tbody>

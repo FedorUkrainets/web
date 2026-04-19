@@ -55,8 +55,8 @@ export default function StationsPage({ navigate }) {
       <Sidebar navigate={navigate} />
       <main className="main-content">
         <div className="row-between">
-          <h1>Stations</h1>
-          <button type="button" onClick={() => setShowModal(true)}>Add Station</button>
+          <h1>Станции</h1>
+          <button type="button" onClick={() => setShowModal(true)}>Добавить станцию</button>
         </div>
         {error && <p className="error">{error}</p>}
         <div className="cards">
