@@ -1,10 +1,17 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const TOKEN_KEY = 'access_token';
+// Базовый URL берём из env. В dev — http://localhost:3001/api, в проде — Railway.
+// Trailing slash зачищаем, чтобы избежать "//api/auth/login".
+const RAW = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE = RAW.replace(/\/+$/, '');
 
+const TOKEN_KEY = 'access_token';
 let onUnauthorized = null;
 
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
+}
+
+export function getApiBase() {
+  return API_BASE;
 }
 
 export async function apiRequest(path, options = {}) {
@@ -17,7 +24,16 @@ export async function apiRequest(path, options = {}) {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(`${API_BASE}${path}`, { ...rest, headers });
+  const url = `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+
+  let response;
+  try {
+    response = await fetch(url, { ...rest, headers });
+  } catch (networkError) {
+    // fetch падает здесь, если сервер недоступен или CORS запрещает запрос.
+    console.error('[API] network error:', url, networkError);
+    throw new Error(`Сервер недоступен: ${url}`);
+  }
 
   if (response.status === 401) {
     if (onUnauthorized) onUnauthorized();
