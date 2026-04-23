@@ -31,9 +31,14 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
 !.env.example
 !**/.env.example
+# .env.production / .env.development содержат только build-time VITE_API_URL
+# (публичный URL, не секрет) — их коммитим осознанно, чтобы Railway-сборка
+# фронтенда знала, куда стучаться за API.
 
 # vercel
 .vercel
