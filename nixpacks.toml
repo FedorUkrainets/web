@@ -1,0 +1,19 @@
+# Принудительно говорим Nixpacks: это НЕ статика, это Node-приложение (backend).
+# Без этого файла Nixpacks видит index.html + package.json без "start"
+# и запускает Caddy для отдачи статики.
+
+providers = ["node"]
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = [
+  "cd backend && npm ci --omit=dev || cd backend && npm install --omit=dev"
+]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "cd backend && node server.js"
