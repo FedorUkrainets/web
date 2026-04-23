@@ -7,24 +7,52 @@ const { query } = require('./db/database');
 
 const app = express();
 
-// --- CORS ---------------------------------------------------------------
-const corsOrigin = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim())
-  : '*';
+// Railway стоит за прокси — доверяем X-Forwarded-* для корректного req.ip и т.п.
+app.set('trust proxy', true);
 
+// --- CORS (bulletproof) ------------------------------------------------
+// Белый список origin'ов можно задать через CORS_ORIGIN="https://a,https://b".
+// Если переменная не задана — пускаем всех ("*"). Так как аутентификация через
+// Bearer-токен (cookies не используем), '*' безопасен.
+const allowlist = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
+  : null; // null == allow all
+
+function originAllowed(origin) {
+  if (!allowlist) return true;
+  if (!origin) return true; // server-to-server, curl
+  return allowlist.includes(origin);
+}
+
+// Ручной middleware — страхуем от того, что cors() по какой-то причине не выставит
+// заголовки (редко, но случается на некоторых прокси/CDN).
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (originAllowed(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '600');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  return next();
+});
+
+// Пакетный cors() оставляем как второй слой (на случай тонких кейсов).
 app.use(cors({
-  origin: corsOrigin,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: (origin, cb) => (originAllowed(origin) ? cb(null, true) : cb(new Error('CORS blocked'))),
+  credentials: false,
 }));
-app.options('*', cors());
+
+console.log(`[CORS] allowlist=${allowlist ? allowlist.join(',') : '*'}`);
 
 // --- Body parsing (tolerant) -------------------------------------------
-// JSON: принимаем и стандартный application/json, и клиентов-раздолбаев,
-// которые шлют JSON без заголовка (type: '*/*' fallback только для /api/*).
 app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' })); // на случай form-data
-// Ручной fallback для запросов без Content-Type: пытаемся распарсить как JSON.
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use((req, _res, next) => {
   if (req.method === 'POST' && (!req.body || Object.keys(req.body).length === 0) && req.headers['content-length'] !== '0') {
     let raw = '';
@@ -32,11 +60,7 @@ app.use((req, _res, next) => {
     req.on('data', (chunk) => { raw += chunk; });
     req.on('end', () => {
       if (raw) {
-        try {
-          req.body = JSON.parse(raw);
-        } catch {
-          console.warn(`[BODY] raw body not JSON (${raw.length}B) on ${req.originalUrl}`);
-        }
+        try { req.body = JSON.parse(raw); } catch { console.warn(`[BODY] raw body not JSON (${raw.length}B) on ${req.originalUrl}`); }
       }
       next();
     });
@@ -44,22 +68,20 @@ app.use((req, _res, next) => {
     next();
   }
 });
-
-// Гарантия: req.body всегда объект.
 app.use((req, _res, next) => {
   if (!req.body || typeof req.body !== 'object') req.body = {};
   next();
 });
 
-// --- Request logger -----------------------------------------------------
+// --- Request logger ----------------------------------------------------
 app.use((req, res, next) => {
   const start = Date.now();
-  // Диагностика тела для auth-ручек (пароль маскируем).
+  const origin = req.headers.origin || '<no-origin>';
   if (req.method === 'POST' && /\/(login|register)(\/|$)/.test(req.originalUrl)) {
-    const hasEmail = Boolean(req.body?.email);
-    const hasPassword = Boolean(req.body?.password);
     const ct = req.headers['content-type'] || '<none>';
-    console.log(`[HTTP] ${req.method} ${req.originalUrl} ct="${ct}" body.keys=[${Object.keys(req.body).join(',')}] hasEmail=${hasEmail} hasPassword=${hasPassword}`);
+    console.log(`[HTTP] ${req.method} ${req.originalUrl} origin="${origin}" ct="${ct}" body.keys=[${Object.keys(req.body).join(',')}]`);
+  } else {
+    console.log(`[HTTP] ${req.method} ${req.originalUrl} origin="${origin}"`);
   }
   res.on('finish', () => {
     const ms = Date.now() - start;
@@ -68,7 +90,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Root & health ------------------------------------------------------
+// --- Root & health -----------------------------------------------------
 app.get('/', (_req, res) => {
   res.json({
     service: 'ev-charging-demo-backend',
@@ -76,8 +98,8 @@ app.get('/', (_req, res) => {
     endpoints: {
       health: '/health',
       healthDb: '/health/db',
-      register: 'POST /api/register  (alias: /api/auth/register)',
-      login: 'POST /api/login  (alias: /api/auth/login)',
+      register: 'POST /api/register (alias: /api/auth/register)',
+      login: 'POST /api/login (alias: /api/auth/login)',
       stations: 'GET /api/stations (Bearer token)',
     },
   });
@@ -95,12 +117,12 @@ app.get('/health/db', async (_req, res) => {
   }
 });
 
-// --- API routes ---------------------------------------------------------
+// --- API routes --------------------------------------------------------
 app.use('/api/auth', authRoutes);
-app.use('/api', authRoutes); // алиасы /api/login, /api/register
+app.use('/api', authRoutes);
 app.use('/api/stations', stationRoutes);
 
-// --- 404 & errors -------------------------------------------------------
+// --- 404 & errors ------------------------------------------------------
 app.use((req, res) => {
   console.warn(`[HTTP] 404 no route: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ message: 'Route not found' });
