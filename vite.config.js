@@ -12,4 +12,10 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    host: '0.0.0.0',
+    port: Number(process.env.PORT) || 4173,
+    // На Railway домен генерируется случайный — разрешаем любые хосты.
+    allowedHosts: true,
+  },
 });

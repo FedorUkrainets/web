@@ -1,6 +1,7 @@
-# Принудительно говорим Nixpacks: это НЕ статика, это Node-приложение (backend).
-# Без этого файла Nixpacks видит index.html + package.json без "start"
-# и запускает Caddy для отдачи статики.
+# Этот файл использует backend-сервис (см. web/backend/nixpacks.toml для backend).
+# Здесь — для FRONTEND-сервиса, если Root Directory = web/.
+# Nixpacks сам детектит Vite: npm ci → npm run build → статика из dist/ через Caddy.
+# Build-time env нужен: VITE_API_URL = https://<ваш-backend>.up.railway.app/api
 
 providers = ["node"]
 
@@ -8,12 +9,11 @@ providers = ["node"]
 nixPkgs = ["nodejs_20", "npm-9_x"]
 
 [phases.install]
-cmds = [
-  "cd backend && npm ci --omit=dev || cd backend && npm install --omit=dev"
-]
+cmds = ["npm ci || npm install"]
 
 [phases.build]
-cmds = []
+cmds = ["npm run build"]
 
 [start]
-cmd = "cd backend && node server.js"
+# vite preview слушает $PORT автоматически.
+cmd = "npx vite preview --host 0.0.0.0 --port $PORT"
