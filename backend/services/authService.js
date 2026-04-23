@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken');
 const { query } = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+if (JWT_SECRET === 'dev-secret') {
+  console.warn('[AUTH] WARNING: using default JWT_SECRET. Set JWT_SECRET env var in production.');
+}
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function badRequest(message) {
@@ -12,34 +15,36 @@ function badRequest(message) {
 }
 
 async function register({ email, password }) {
+  console.log(`[AUTH] register attempt: ${email}`);
   if (!email || !password) throw badRequest('Email and password are required');
   if (!EMAIL_RE.test(email)) throw badRequest('Invalid email format');
   if (password.length < 6) throw badRequest('Password must be at least 6 characters');
 
   const exists = await query('SELECT id FROM users WHERE email = $1', [email]);
   if (exists.rowCount > 0) {
+    console.warn(`[AUTH] register: email already taken: ${email}`);
     const error = new Error('Email already exists');
     error.status = 409;
     throw error;
   }
 
   const passwordHash = bcrypt.hashSync(password, 10);
-  // Публичная регистрация создаёт только обычных пользователей — роль 'admin'
-  // выдаётся вручную через базу/сид, никогда из тела запроса.
-  await query(
-    'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3)',
+  const insert = await query(
+    'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING id',
     [email, passwordHash, 'user'],
   );
-
+  console.log(`[AUTH] register: user created id=${insert.rows[0].id} email=${email}`);
   return { message: 'Registered successfully' };
 }
 
 async function login({ email, password }) {
+  console.log(`[AUTH] login attempt: ${email}`);
   if (!email || !password) throw badRequest('Email and password are required');
 
   const result = await query('SELECT * FROM users WHERE email = $1', [email]);
   const user = result.rows[0];
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+    console.warn(`[AUTH] login: invalid credentials for ${email}`);
     const error = new Error('Invalid credentials');
     error.status = 401;
     throw error;
@@ -50,6 +55,7 @@ async function login({ email, password }) {
     JWT_SECRET,
     { expiresIn: '1h' },
   );
+  console.log(`[AUTH] login: success id=${user.id} role=${user.role}`);
   return { access_token: accessToken, token_type: 'bearer' };
 }
 

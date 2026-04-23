@@ -1,8 +1,17 @@
-const { pool, query } = require('./database');
+const { query, verifyConnection } = require('./database');
 const bcrypt = require('bcryptjs');
 
 async function initDatabase() {
+  console.log('[DB] initDatabase: start');
   try {
+    await verifyConnection();
+  } catch (error) {
+    console.error('[DB] initDatabase: cannot connect ->', error.message);
+    throw error;
+  }
+
+  try {
+    console.log('[DB] initDatabase: creating tables if missing...');
     await query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -36,16 +45,26 @@ async function initDatabase() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
     `);
+    console.log('[DB] initDatabase: tables OK');
 
     const passwordHash = bcrypt.hashSync('Admin123!', 10);
-    await query(
-      'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING',
+    const seedResult = await query(
+      `INSERT INTO users (email, password_hash, role)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email) DO NOTHING
+       RETURNING id`,
       ['admin@demo.local', passwordHash, 'admin'],
     );
+    if (seedResult.rowCount > 0) {
+      console.log('[DB] seed: default admin user created (admin@demo.local / Admin123!)');
+    } else {
+      console.log('[DB] seed: default admin already exists, skipping');
+    }
   } catch (error) {
-    console.error('PostgreSQL init failed:', error.message);
+    console.error('[DB] initDatabase: FAILED ->', error.message);
     throw error;
   }
+  console.log('[DB] initDatabase: done');
 }
 
-module.exports = { initDatabase, pool };
+module.exports = { initDatabase };
