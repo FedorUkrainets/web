@@ -8,9 +8,6 @@ const { query } = require('./db/database');
 const app = express();
 
 // --- CORS ---------------------------------------------------------------
-// Разрешаем всё, пока auth через Bearer-токен (cookies не используем).
-// Если захотите ограничить — задайте CORS_ORIGIN="https://your-frontend.app"
-// или CSV: CORS_ORIGIN="https://a.app,https://b.app".
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim())
   : '*';
@@ -22,11 +19,48 @@ app.use(cors({
 }));
 app.options('*', cors());
 
-app.use(express.json());
+// --- Body parsing (tolerant) -------------------------------------------
+// JSON: принимаем и стандартный application/json, и клиентов-раздолбаев,
+// которые шлют JSON без заголовка (type: '*/*' fallback только для /api/*).
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' })); // на случай form-data
+// Ручной fallback для запросов без Content-Type: пытаемся распарсить как JSON.
+app.use((req, _res, next) => {
+  if (req.method === 'POST' && (!req.body || Object.keys(req.body).length === 0) && req.headers['content-length'] !== '0') {
+    let raw = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => { raw += chunk; });
+    req.on('end', () => {
+      if (raw) {
+        try {
+          req.body = JSON.parse(raw);
+        } catch {
+          console.warn(`[BODY] raw body not JSON (${raw.length}B) on ${req.originalUrl}`);
+        }
+      }
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
+// Гарантия: req.body всегда объект.
+app.use((req, _res, next) => {
+  if (!req.body || typeof req.body !== 'object') req.body = {};
+  next();
+});
 
 // --- Request logger -----------------------------------------------------
 app.use((req, res, next) => {
   const start = Date.now();
+  // Диагностика тела для auth-ручек (пароль маскируем).
+  if (req.method === 'POST' && /\/(login|register)(\/|$)/.test(req.originalUrl)) {
+    const hasEmail = Boolean(req.body?.email);
+    const hasPassword = Boolean(req.body?.password);
+    const ct = req.headers['content-type'] || '<none>';
+    console.log(`[HTTP] ${req.method} ${req.originalUrl} ct="${ct}" body.keys=[${Object.keys(req.body).join(',')}] hasEmail=${hasEmail} hasPassword=${hasPassword}`);
+  }
   res.on('finish', () => {
     const ms = Date.now() - start;
     console.log(`[HTTP] ${req.ip} ${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms)`);
@@ -35,7 +69,6 @@ app.use((req, res, next) => {
 });
 
 // --- Root & health ------------------------------------------------------
-// Корневой эндпоинт: чтобы открыв URL в браузере сразу было видно, что сервис жив.
 app.get('/', (_req, res) => {
   res.json({
     service: 'ev-charging-demo-backend',
@@ -63,11 +96,8 @@ app.get('/health/db', async (_req, res) => {
 });
 
 // --- API routes ---------------------------------------------------------
-// Канонический префикс:
 app.use('/api/auth', authRoutes);
-// Алиасы под запрос задачи — чтобы работали и /api/register, и /api/login:
-app.use('/api', authRoutes);
-
+app.use('/api', authRoutes); // алиасы /api/login, /api/register
 app.use('/api/stations', stationRoutes);
 
 // --- 404 & errors -------------------------------------------------------

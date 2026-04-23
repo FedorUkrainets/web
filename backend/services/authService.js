@@ -14,9 +14,19 @@ function badRequest(message) {
   return error;
 }
 
-async function register({ email, password }) {
-  console.log(`[AUTH] register attempt: ${email}`);
-  if (!email || !password) throw badRequest('Email and password are required');
+function normalizeEmail(value) {
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+}
+
+async function register(body = {}) {
+  const email = normalizeEmail(body.email);
+  const password = typeof body.password === 'string' ? body.password : '';
+  console.log(`[AUTH] register attempt: email="${email}" pwLen=${password.length}`);
+
+  if (!email || !password) {
+    throw badRequest('Email and password are required. Send JSON body: {"email":"...","password":"..."} with header Content-Type: application/json');
+  }
   if (!EMAIL_RE.test(email)) throw badRequest('Invalid email format');
   if (password.length < 6) throw badRequest('Password must be at least 6 characters');
 
@@ -37,9 +47,14 @@ async function register({ email, password }) {
   return { message: 'Registered successfully' };
 }
 
-async function login({ email, password }) {
-  console.log(`[AUTH] login attempt: ${email}`);
-  if (!email || !password) throw badRequest('Email and password are required');
+async function login(body = {}) {
+  const email = normalizeEmail(body.email);
+  const password = typeof body.password === 'string' ? body.password : '';
+  console.log(`[AUTH] login attempt: email="${email}" pwLen=${password.length}`);
+
+  if (!email || !password) {
+    throw badRequest('Email and password are required. Send JSON body: {"email":"...","password":"..."} with header Content-Type: application/json');
+  }
 
   const result = await query('SELECT * FROM users WHERE email = $1', [email]);
   const user = result.rows[0];
