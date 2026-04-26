@@ -1,16 +1,15 @@
 const { pool, query } = require('../db/database');
 
-const ALLOWED_TRANSITIONS = {
-  CREATED: ['ACTIVE'],
-  ACTIVE: ['COMPLETED', 'CANCELLED'],
-  COMPLETED: [],
-  CANCELLED: [],
-};
+const VALID_STATUSES = ['CREATED', 'ACTIVE', 'COMPLETED', 'CANCELLED'];
 
 function validateTransition(current, next) {
-  const transitions = ALLOWED_TRANSITIONS[current];
-  if (!transitions || !transitions.includes(next)) {
-    const error = new Error(`Invalid status transition from ${current} to ${next}`);
+  if (!VALID_STATUSES.includes(next)) {
+    const error = new Error(`Invalid status: ${next}`);
+    error.status = 400;
+    throw error;
+  }
+  if (current === next) {
+    const error = new Error(`Station already has status ${next}`);
     error.status = 409;
     throw error;
   }
